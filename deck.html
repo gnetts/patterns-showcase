@@ -46,10 +46,11 @@ body{
 .inner{width:min(1180px,92vw);margin:0 auto;padding:70px 0 44px;}
 
 /* themes */
-.light{background-color:#f3eee2;background-image:linear-gradient(180deg,rgba(243,238,226,.83),rgba(241,236,224,.9)),var(--leaf);background-repeat:no-repeat,repeat;background-size:auto,330px 330px;color:var(--ink);}
-.brandmark{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:min(1180px,92vw);display:flex;align-items:center;gap:10px;pointer-events:none;z-index:5;}
-.brandmark .glogo{--d:34px;}
-.brandmark .wm{font-family:var(--serif);font-weight:600;font-size:1rem;color:var(--ink);}
+.light{background-color:#f3eee2;background-image:linear-gradient(180deg,rgba(243,238,226,.6),rgba(243,238,226,.68)),var(--leaf);background-repeat:no-repeat,repeat;background-size:auto,340px 340px;color:var(--ink);}
+.ribbon{position:fixed;top:0;left:0;right:0;height:58px;z-index:54;display:flex;align-items:center;padding:0 clamp(18px,4vw,40px);background:rgba(243,238,226,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--paperEdge);box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 6px 20px -16px rgba(16,22,30,.4);}
+.ribbon .rleft{display:flex;align-items:center;gap:11px;}
+.ribbon .glogo{--d:36px;}
+.ribbon .wm{font-family:var(--serif);font-weight:600;font-size:1.08rem;color:var(--ink);letter-spacing:.01em;}
 .dark{background:radial-gradient(130% 130% at 80% -10%, #16202b 0%, var(--slate900) 55%, var(--slate950) 100%);color:var(--onDark);}
 .dark .eyebrow{color:var(--goldText);}
 .dark h1,.dark h2,.dark h3{color:var(--onDark);}
@@ -71,8 +72,8 @@ body{
 .dark .snum{color:var(--onDark3);}
 
 /* type system */
-.eyebrow{font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--green);margin-bottom:clamp(14px,2.4vh,22px);display:flex;align-items:center;gap:10px;}
-.eyebrow::before{content:"";width:26px;height:1.5px;background:currentColor;opacity:.55;}
+.eyebrow{font-family:var(--sans);font-size:clamp(.92rem,1.15vw,1.08rem);font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:clamp(16px,2.6vh,24px);display:flex;align-items:center;gap:13px;}
+.eyebrow::before{content:"";width:38px;height:2px;background:currentColor;opacity:.6;}
 h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.6rem,6.6vw,5.4rem);line-height:.98;letter-spacing:-.018em;}
 h2{font-family:var(--serif);font-weight:400;font-size:clamp(2rem,4.7vw,3.7rem);line-height:1.02;letter-spacing:-.015em;}
 h3{font-family:var(--serif);font-weight:500;font-size:clamp(1.15rem,2vw,1.5rem);line-height:1.15;}
@@ -263,7 +264,7 @@ table.cmp tr.usrow td:first-child{color:var(--goldBright);font-weight:700;border
 .dot.sect{background:rgba(255,255,255,.18);}
 .navbtn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(16,22,30,.5);color:#fff;cursor:pointer;font-size:1.1rem;line-height:1;display:grid;place-items:center;backdrop-filter:blur(6px);transition:background .2s,border-color .2s;}
 .navbtn:hover{background:rgba(16,22,30,.85);border-color:rgba(255,255,255,.4);}
-.counter{position:fixed;top:16px;right:18px;z-index:50;font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;color:rgba(255,255,255,.55);mix-blend-mode:difference;}
+.counter{position:fixed;top:21px;right:clamp(18px,4vw,40px);z-index:56;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:var(--ink3);}
 .progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--green),var(--goldBright));z-index:60;transition:width .5s var(--ease);box-shadow:0 0 12px rgba(232,181,74,.5);}
 .hint{position:fixed;bottom:16px;right:18px;z-index:50;font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;color:rgba(255,255,255,.4);mix-blend-mode:difference;transition:opacity .6s;}
 
@@ -653,14 +654,11 @@ table.cmp tr.usrow td:first-child{color:var(--goldBright);font-weight:700;border
   });
   var dots=Array.prototype.slice.call(dotsWrap.children);
 
-  // brand mark (home-screen giraffe head + wordmark) on every slide except the title
-  slides.forEach(function(s){
-    if(s.id==='s-title') return;
-    var bm=document.createElement('div');
-    bm.className='brandmark';
-    bm.innerHTML='<span class="glogo"></span><span class="wm">Patterns</span>';
-    s.insertBefore(bm,s.firstChild);
-  });
+  // fixed top ribbon (home-screen style), hidden on the title slide
+  var ribbon=document.createElement('div');
+  ribbon.className='ribbon';
+  ribbon.innerHTML='<div class="rleft"><span class="glogo"></span><span class="wm">Patterns</span></div>';
+  document.body.appendChild(ribbon);
 
   function pad(x){return (x<10?'0':'')+x;}
   function render(){
@@ -670,6 +668,8 @@ table.cmp tr.usrow td:first-child{color:var(--goldBright);font-weight:700;border
     });
     dots.forEach(function(d,idx){d.classList.toggle('on',idx===i);});
     counter.textContent=pad(i+1)+' / '+pad(n);
+    if(ribbon)ribbon.style.display=(i===0?'none':'flex');
+    counter.style.display=(i===0?'none':'block');
     progress.style.width=((i)/(n-1)*100)+'%';
     if(location.hash!=='#'+(i+1)) history.replaceState(null,'','#'+(i+1));
   }
