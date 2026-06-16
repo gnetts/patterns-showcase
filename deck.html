@@ -223,6 +223,22 @@ table.cmp tr td:first-child{font-family:var(--serif);font-size:1.04em;color:var(
 .usrow td{background:var(--greenTintBg);}
 .usrow td:first-child{color:var(--greenDeep);}
 
+/* population dashboard (dark slide) */
+.poptable{margin-top:24px;border-top:1px solid rgba(255,255,255,.18);}
+.poptable .pr{display:grid;grid-template-columns:1.05fr 2fr .85fr 2.35fr;gap:18px;padding:13px 4px;border-bottom:1px solid rgba(255,255,255,.08);align-items:baseline;}
+.poptable .ph span{font-family:var(--mono);font-size:.63rem;letter-spacing:.16em;text-transform:uppercase;color:var(--onDark3);}
+.poptable .sp{font-family:var(--serif);font-size:1.18rem;color:var(--onDark);}
+.poptable .wh{color:var(--onDark2);font-size:.92rem;}
+.poptable .num{font-family:var(--mono);font-size:1.06rem;font-weight:600;color:var(--goldBright);}
+.poptable .tr{font-family:var(--mono);font-size:.76rem;font-weight:500;}
+.tr.up{color:var(--greenBright);}
+.tr.flat{color:var(--goldText);}
+.tr.down{color:#e6837a;}
+.tr.split{color:var(--onDark2);font-size:.7rem;line-height:1.45;}
+@media(max-width:820px){
+  .poptable .pr{grid-template-columns:1fr;gap:3px;padding:12px 2px;}
+  .poptable .ph{display:none;}
+}
 /* sources */
 .srcgrid{columns:2;column-gap:38px;font-size:.86rem;line-height:1.5;}
 .srcgrid p{break-inside:avoid;margin-bottom:9px;color:var(--ink2);}
@@ -287,7 +303,7 @@ table.cmp tr td:first-child{font-family:var(--serif);font-size:1.04em;color:var(
 </head>
 <body>
 <div class="progress" id="progress"></div>
-<div class="counter" id="counter">01 / 15</div>
+<div class="counter" id="counter">01 / 16</div>
 
 <div class="deck" id="deck">
 
@@ -328,6 +344,23 @@ table.cmp tr td:first-child{font-family:var(--serif);font-size:1.04em;color:var(
       </div>
     </div>
     <svg class="sprig" style="right:-30px;bottom:-20px;width:220px" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M50 95 C50 60 50 40 50 8"/><g stroke-width="1.2"><path d="M50 70 C35 66 26 56 24 44"/><path d="M50 70 C65 66 74 56 76 44"/><path d="M50 52 C37 49 29 41 27 31"/><path d="M50 52 C63 49 71 41 73 31"/><path d="M50 34 C40 32 33 26 31 18"/><path d="M50 34 C60 32 67 26 69 18"/></g></svg>
+  </section>
+
+  <!-- 2b POPULATIONS -->
+  <section class="slide dark" data-label="Populations">
+    <div class="inner stag">
+      <div class="eyebrow">The populations</div>
+      <h2>Four species, <em>heading in different directions.</em></h2>
+      <p class="lede" style="max-width:66ch">About 140,000 giraffe remain, up from under 100,000 in 2016, largely because the data got better. Better data is the product. Beneath that headline, some populations are recovering and others are vanishing, park by park.</p>
+      <div class="poptable">
+        <div class="pr ph"><span>Species</span><span>Stronghold parks</span><span>Wild estimate</span><span>Trend</span></div>
+        <div class="pr"><span class="sp">Southern</span><span class="wh">Kruger ~12,400 &middot; Etosha / Namibia</span><span class="num">~69,000</span><span class="tr up">&#9650; Rising &middot; +50% in 5 yrs</span></div>
+        <div class="pr"><span class="sp">Reticulated</span><span class="wh">Kenya &middot; Laikipia, Samburu</span><span class="num">~21,000</span><span class="tr flat">&#9658; Stabilising &middot; long-term decline</span></div>
+        <div class="pr"><span class="sp">Masai</span><span class="wh">Serengeti &amp; Tarangire, Tanzania</span><span class="num">~44,000</span><span class="tr down">&#9660; Endangered &middot; ~50% in 30 yrs</span></div>
+        <div class="pr"><span class="sp">Northern</span><span class="wh">Niger &middot; Chad &middot; Uganda</span><span class="num">~5,900</span><span class="tr split">&#9670; Split &middot; W. African 49 to 600 &#9650; &middot; Kordofan &amp; Nubian critically endangered &#9660;</span></div>
+      </div>
+      <p class="fine" style="margin-top:14px"><b style="color:var(--onDark)">Kruger National Park alone holds ~12,412 giraffe</b> (range 10,345 to 14,554), the largest single protected population. Sources: GCF State of Giraffe 2025; African Journal of Wildlife Research 2025.</p>
+    </div>
   </section>
 
   <!-- 3 WHY NOW -->
@@ -538,6 +571,9 @@ table.cmp tr td:first-child{font-family:var(--serif);font-size:1.04em;color:var(
         <p><b>SANParks 6.23m visits, R4.1bn revenue (2024/25)</b> · Central News / Kouga News.</p>
         <p><b>Kruger ~1.9m visits, ~30% of network</b> · Discover Africa / The Citizen.</p>
         <p><b>Giraffe ~140,000, down ~40% in 30 yrs, 90% habitat lost</b> · Giraffe Conservation Foundation.</p>
+        <p><b>By species: Southern ~69k, Masai ~44k, Reticulated ~21k, Northern ~5.9k</b> · GCF State of Giraffe 2025.</p>
+        <p><b>Kruger ~12,412 giraffe (10,345 to 14,554)</b> · African Journal of Wildlife Research 2025.</p>
+        <p><b>West African giraffe 49 (1996) to ~600 today</b> · GCF / Operation Sahel.</p>
         <p><b>Wild Me / Wildbook: nonprofit, 8 staff, 53 species</b> · Wild Me, National Wildlife Federation.</p>
         <p><b>GiraffeSpotter / Wildbook for Giraffe</b> · Giraffe Conservation Foundation, giraffespotter.org.</p>
         <p><b>Bezos Earth Fund $30m AI Grand Challenge, ~$2m to WCS &amp; Cornell</b> · Bezos Earth Fund, WCS.</p>
@@ -585,12 +621,10 @@ table.cmp tr td:first-child{font-family:var(--serif);font-size:1.04em;color:var(
   var progress=document.getElementById('progress');
   var hint=document.getElementById('hint');
   var n=slides.length, i=0;
-  var sectionStarts={0:1,12:1,13:1}; // title, appendix divider markers
-
-  // build dots
+  // build dots (title + appendix divider are section markers)
   slides.forEach(function(s,idx){
     var b=document.createElement('button');
-    b.className='dot'+(sectionStarts[idx]?' sect':'');
+    b.className='dot'+((idx===0||s.getAttribute('data-label')==='Appendix')?' sect':'');
     b.title=s.getAttribute('data-label')||('Slide '+(idx+1));
     b.addEventListener('click',function(){go(idx);});
     dotsWrap.appendChild(b);
