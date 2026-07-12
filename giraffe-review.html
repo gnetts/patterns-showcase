@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GIRAFFE · sightings review</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦒</text></svg>" />
+<style>
+  :root {
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-2:       #52514e;
+    --muted:       #898781;
+    --hairline:    #e1e0d9;
+    --border:      rgba(11,11,11,0.10);
+    --accent:      #2a78d6;
+    --good:        #0ca30c;
+    --good-text:   #006300;
+    --warning:     #fab219;
+    --warning-text:#8a5c00;
+    --serious:     #ec835a;
+    --serious-text:#a34215;
+    --critical:    #d03b3b;
+    --critical-text:#a02222;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --ink:         #ffffff;
+      --ink-2:       #c3c2b7;
+      --muted:       #898781;
+      --hairline:    #2c2c2a;
+      --border:      rgba(255,255,255,0.10);
+      --accent:      #3987e5;
+      --good-text:   #0ca30c;
+      --warning-text:#fab219;
+      --serious-text:#ec835a;
+      --critical-text:#e66767;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 1080px; margin: 0 auto; padding: 24px 20px 80px; }
+  header.top { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  header.top h1 { font-size: 22px; margin: 0; }
+  header.top .who { color: var(--ink-2); font-size: 13px; margin-left: auto; }
+  .sub { color: var(--ink-2); font-size: 13px; margin: 0 0 20px; }
+  a { color: var(--accent); }
+  button {
+    font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  input, select, textarea {
+    font: inherit; font-size: 13px; padding: 5px 8px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+  }
+
+  /* notices */
+  .notice { background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px;
+            padding: 14px 16px; margin: 14px 0; font-size: 14px; color: var(--ink-2); }
+  .notice code { font-size: 12px; background: var(--page); padding: 1px 5px; border-radius: 4px; }
+  .notice.error { border-color: var(--critical); }
+
+  /* stat tiles */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 18px 0 26px; }
+  .tile { background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; padding: 12px 14px; }
+  .tile .label { font-size: 12px; color: var(--ink-2); }
+  .tile .value { font-size: 30px; font-weight: 600; line-height: 1.15; }
+  .tile .detail { font-size: 12px; color: var(--muted); }
+  .tile.alert .value { color: var(--warning-text); }
+
+  section { margin: 30px 0; }
+  section > h2 { font-size: 16px; margin: 0 0 4px; }
+  section > .hint { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+
+  /* review queue cards */
+  .queue { display: grid; gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px;
+          padding: 14px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .card .photo { width: 168px; height: 168px; flex: none; border-radius: 8px; background: var(--page);
+                 border: 1px solid var(--hairline); object-fit: cover; display: block; cursor: zoom-in; }
+  .card .photo.placeholder { display: flex; align-items: center; justify-content: center;
+                             color: var(--muted); font-size: 12px; cursor: default; }
+  .card .body { flex: 1 1 300px; min-width: 0; }
+  .card h3 { margin: 0 0 2px; font-size: 15px; }
+  .card .meta { font-size: 13px; color: var(--ink-2); margin: 1px 0; }
+  .card .meta b { color: var(--ink); font-weight: 600; }
+  .card .actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .card .actions .result { font-size: 13px; }
+
+  /* badges — color never alone: every badge carries an icon + word */
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px;
+           border-radius: 99px; border: 1px solid var(--border); white-space: nowrap; }
+  .badge.good     { color: var(--good-text);     border-color: var(--good); }
+  .badge.warning  { color: var(--warning-text);  border-color: var(--warning); }
+  .badge.serious  { color: var(--serious-text);  border-color: var(--serious); }
+  .badge.critical { color: var(--critical-text); border-color: var(--critical); }
+  .badge.neutral  { color: var(--ink-2); }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 12px; border-top: 1px solid var(--hairline); vertical-align: top; }
+  thead th { border-top: none; color: var(--ink-2); font-weight: 600; font-size: 12px; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; }
+  th.num { text-align: right; }
+  td .sub2 { color: var(--muted); font-size: 12px; }
+  tr.merged-row td { color: var(--muted); }
+
+  .filters { display: flex; gap: 8px; margin: 0 0 10px; flex-wrap: wrap; }
+
+  /* merge tool */
+  .mergebox { background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px;
+              padding: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  /* sign-in / settings */
+  #signin-wrap { display: flex; justify-content: center; padding: 30px 0; }
+  details.settings { margin: 26px 0 0; font-size: 13px; color: var(--ink-2); }
+  details.settings .row { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; align-items: center; }
+  details.settings input { width: min(420px, 100%); }
+
+  /* photo lightbox */
+  #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none;
+              align-items: center; justify-content: center; z-index: 10; cursor: zoom-out; }
+  #lightbox img { max-width: 92vw; max-height: 92vh; border-radius: 8px; }
+  #lightbox.open { display: flex; }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <h1>🦒 GIRAFFE — sightings review</h1>
+    <span class="who" id="who"></span>
+  </header>
+  <p class="sub">Everything the Kruger testers have submitted — sightings, verdicts, namings and
+     merges — pulled live from the API. Reviewer sign-in required.</p>
+
+  <div id="status" class="notice" hidden></div>
+  <div id="signin-wrap" hidden><div id="signin"></div></div>
+  <div id="app" hidden></div>
+
+  <details class="settings">
+    <summary>Connection settings</summary>
+    <div class="row"><label for="cfg-api">API URL</label><input id="cfg-api" /></div>
+    <div class="row"><label for="cfg-pk">Clerk publishable key</label><input id="cfg-pk" /></div>
+    <div class="row"><button id="cfg-save" class="primary">Save &amp; reload</button>
+      <button id="cfg-signout">Sign out</button></div>
+  </details>
+</main>
+<div id="lightbox" onclick="this.classList.remove('open')"><img alt="sighting photo" /></div>
+
+<script>
+"use strict";
+/* ---------- configuration (overridable, persisted) ---------- */
+const DEFAULT_API = "https://giraffe-api.fly.dev";
+const DEFAULT_PK  = "pk_test_aW5maW5pdGUtcm9iaW4tOTguY2xlcmsuYWNjb3VudHMuZGV2JA";
+const qs   = new URLSearchParams(location.search);
+const API  = (qs.get("api") || localStorage.getItem("giraffe_review_api") || DEFAULT_API).replace(/\/+$/, "");
+const PK   = qs.get("pk")  || localStorage.getItem("giraffe_review_pk")  || DEFAULT_PK;
+
+const $ = (sel) => document.querySelector(sel);
+$("#cfg-api").value = API;
+$("#cfg-pk").value  = PK;
+$("#cfg-save").onclick = () => {
+  localStorage.setItem("giraffe_review_api", $("#cfg-api").value.trim());
+  localStorage.setItem("giraffe_review_pk",  $("#cfg-pk").value.trim());
+  location.search = ""; // drop any ?api/?pk override, then reload
+};
+$("#cfg-signout").onclick = async () => { if (window.Clerk) await Clerk.signOut(); location.reload(); };
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+  (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const when = (iso) => new Date(iso).toLocaleString(undefined,
+  { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+function say(msg, isError) {
+  const el = $("#status");
+  el.hidden = !msg;
+  el.classList.toggle("error", !!isError);
+  el.innerHTML = msg || "";
+}
+
+/* ---------- Clerk (auth) ---------- */
+/* The instance domain is encoded inside the publishable key, so one page
+   works against the dev instance today and a pk_live later. */
+function clerkDomain(pk) {
+  try { return atob(pk.split("_")[2]).replace(/\$$/, ""); }
+  catch { return null; }
+}
+
+async function boot() {
+  const domain = clerkDomain(PK);
+  if (!domain) { say("The Clerk publishable key in the connection settings looks invalid.", true); return; }
+  say("Loading sign-in…");
+  const s = document.createElement("script");
+  s.src = `https://${domain}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`;
+  s.setAttribute("data-clerk-publishable-key", PK);
+  s.onerror = () => say(`Couldn't load Clerk from <code>${esc(domain)}</code> — check the publishable key in the connection settings.`, true);
+  s.onload = async () => {
+    await Clerk.load();
+    Clerk.addListener(({ user }) => { if (user && !state.loadedFor) start(); });
+    if (Clerk.user) start();
+    else {
+      say("");
+      $("#signin-wrap").hidden = false;
+      Clerk.mountSignIn($("#signin"));
+    }
+  };
+  document.head.appendChild(s);
+}
+
+const state = { data: null, loadedFor: null, photoUrls: new Map() };
+const token = () => Clerk.session.getToken();
+
+async function apiFetch(path, opts = {}) {
+  const t = await token();
+  return fetch(API + path, {
+    ...opts,
+    headers: { Authorization: `Bearer ${t}`, ...(opts.headers || {}) },
+  });
+}
+
+/* ---------- data load ---------- */
+async function start() {
+  state.loadedFor = Clerk.user.id;
+  $("#signin-wrap").hidden = true;
+  const email = Clerk.user.primaryEmailAddress?.emailAddress || Clerk.user.id;
+  $("#who").textContent = `signed in as ${email}`;
+  await refresh(true);
+}
+
+async function refresh(first) {
+  say(first
+    ? "Fetching sightings… the API sleeps when idle, so the first load can take a minute while it wakes."
+    : "Refreshing…");
+  let resp;
+  try { resp = await apiFetch("/admin/overview"); }
+  catch (e) {
+    say(`Couldn't reach the API at <code>${esc(API)}</code> (${esc(e.message)}). ` +
+        `If it's the cold-start wake, <a href="#" onclick="refresh(true);return false">try again</a> in ~30 s.`, true);
+    return;
+  }
+  if (resp.status === 403) {
+    say("You're signed in, but this account isn't a <b>reviewer</b>. Grant it once from psql:<br>" +
+        "<code>update users set role = 'reviewer' where handle like '&lt;your-handle&gt;%';</code>", true);
+    return;
+  }
+  if (resp.status === 404) {
+    say("The API answered, but it doesn't have the review endpoints yet — deploy the branch " +
+        "<code>claude/giraffe-sightings-html-27av0j</code> of the GIRAFFE repo (<code>fly deploy</code>).", true);
+    return;
+  }
+  if (!resp.ok) { say(`API error ${resp.status}: ${esc(await resp.text())}`, true); return; }
+  state.data = await resp.json();
+  say("");
+  render();
+}
+
+/* ---------- reviewer actions ---------- */
+async function act(btn, path, body) {
+  const row = btn.closest(".actions");
+  btn.disabled = true;
+  const out = row?.querySelector(".result");
+  try {
+    const resp = await apiFetch(path, {
+      method: "POST",
+      headers: body ? { "Content-Type": "application/json" } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!resp.ok) {
+      const detail = (await resp.json().catch(() => ({}))).detail;
+      if (out) out.textContent = `✕ ${detail || resp.status}`;
+      btn.disabled = false;
+      return;
+    }
+    if (out) out.textContent = "✓ done";
+    await refresh();
+  } catch (e) {
+    if (out) out.textContent = `✕ ${e.message}`;
+    btn.disabled = false;
+  }
+}
+
+/* ---------- badges ---------- */
+const SIGHTING_BADGE = {
+  auto:           ["good",     "✓ auto-matched"],
+  pending_review: ["warning",  "⚠ pending review"],
+  new_claim:      ["serious",  "★ new claim"],
+  unidentified:   ["neutral",  "∅ unidentified"],
+  queued:         ["neutral",  "… queued"],
+  failed:         ["critical", "✕ failed"],
+};
+const GIRAFFE_BADGE = {
+  confirmed:   ["good",    "✓ confirmed"],
+  provisional: ["warning", "● provisional"],
+  merged:      ["neutral", "→ merged"],
+};
+const badge = (map, status) => {
+  const [tone, label] = map[status] || ["neutral", status];
+  return `<span class="badge ${tone}">${esc(label)}</span>`;
+};
+
+/* ---------- photos (auth header needed, so fetch → blob) ---------- */
+async function loadPhoto(img) {
+  const id = img.dataset.sighting;
+  if (state.photoUrls.has(id)) { img.src = state.photoUrls.get(id); return; }
+  try {
+    const resp = await apiFetch(`/admin/sightings/${id}/photo`);
+    if (!resp.ok) throw new Error(resp.status);
+    const url = URL.createObjectURL(await resp.blob());
+    state.photoUrls.set(id, url);
+    img.src = url;
+    img.onclick = () => { $("#lightbox img").src = url; $("#lightbox").classList.add("open"); };
+  } catch {
+    const ph = document.createElement("div");
+    ph.className = "photo placeholder";
+    ph.textContent = "photo unavailable";
+    img.replaceWith(ph);
+  }
+}
+
+/* ---------- rendering ---------- */
+function render() {
+  const d = state.data;
+  const app = $("#app");
+  const sightings = d.sightings;
+  const giraffes  = d.giraffes;
+  const live      = giraffes.filter((g) => g.status !== "merged");
+  const queue     = sightings.filter((s) => s.status === "pending_review" || s.status === "new_claim");
+  const failed    = sightings.filter((s) => s.status === "failed" || s.job_status === "failed");
+  const finders   = d.finders.filter((f) => f.sighting_count > 0);
+
+  const tiles = `
+    <div class="tiles">
+      <div class="tile"><div class="label">Sightings submitted</div>
+        <div class="value">${sightings.length}</div>
+        <div class="detail">${sightings.filter((s) => s.status === "auto").length} auto-matched</div></div>
+      <div class="tile ${queue.length ? "alert" : ""}"><div class="label">Awaiting your review</div>
+        <div class="value">${queue.length}</div>
+        <div class="detail">${sightings.filter((s) => s.status === "pending_review").length} fuzzy · ${sightings.filter((s) => s.status === "new_claim").length} new claims</div></div>
+      <div class="tile"><div class="label">Giraffes in catalogue</div>
+        <div class="value">${live.length}</div>
+        <div class="detail">${live.filter((g) => g.status === "provisional").length} provisional</div></div>
+      <div class="tile"><div class="label">Finders active</div>
+        <div class="value">${finders.length}</div>
+        <div class="detail">${d.merges.length} merges recorded</div></div>
+      <div class="tile ${failed.length ? "alert" : ""}"><div class="label">Failures</div>
+        <div class="value">${failed.length}</div>
+        <div class="detail">sightings or jobs that errored</div></div>
+    </div>
+    <div style="margin:-14px 0 8px"><button onclick="refresh()">↻ Refresh</button>
+      <span class="sub2" style="color:var(--muted);font-size:12px"> data as of ${new Date().toLocaleTimeString()}</span></div>`;
+
+  const queueCards = queue.map((s) => {
+    const actions = [];
+    if (s.status === "pending_review")
+      actions.push(`<button class="primary" onclick="act(this, '/admin/sightings/${s.id}/confirm')">Approve match</button>`);
+    if (s.status === "new_claim" && s.giraffe_id && s.giraffe_status === "provisional")
+      actions.push(`<button class="primary" onclick="act(this, '/admin/giraffes/${s.giraffe_id}/confirm')">Confirm “${esc(s.giraffe_name)}”</button>`);
+    return `
+    <div class="card">
+      <img class="photo" data-sighting="${s.id}" alt="sighting photo" />
+      <div class="body">
+        <h3>${badge(SIGHTING_BADGE, s.status)} &nbsp;${esc(s.giraffe_name || "no identity attached")}</h3>
+        ${s.proposed_name ? `<div class="meta">name wish from finder: <b>“${esc(s.proposed_name)}”</b></div>` : ""}
+        <div class="meta">found by <b>${esc(s.finder)}</b> · captured ${when(s.captured_at)} · ${esc(s.coarse_region || "no location")} · ${esc(s.park)}</div>
+        <div class="meta">match confidence <b>${s.match_confidence ?? "–"}</b>${s.quality_score != null ? ` · quality ${Number(s.quality_score).toFixed(2)}` : ""}${s.gate_reasons?.length ? ` · gate: ${esc(s.gate_reasons.join(", "))}` : ""}</div>
+        ${s.giraffe_name ? `<div class="meta">identity status: ${badge(GIRAFFE_BADGE, s.giraffe_status)}</div>` : ""}
+        <div class="actions">${actions.join(" ")}<span class="result"></span></div>
+      </div>
+    </div>`;
+  }).join("");
+
+  const giraffeRows = giraffes.map((g) => {
+    const into = g.canonical_id && giraffes.find((x) => x.id === g.canonical_id);
+    return `
+    <tr class="${g.status === "merged" ? "merged-row" : ""}">
+      <td><b>${esc(g.name)}</b>${into ? ` <span class="sub2">→ merged into ${esc(into.name)}</span>` : ""}</td>
+      <td>${badge(GIRAFFE_BADGE, g.status)}</td>
+      <td>${esc(g.claimed_by || "—")}</td>
+      <td>${esc(g.park)}</td>
+      <td>${when(g.first_seen)}</td>
+      <td class="num">${g.sighting_count}</td>
+      <td class="num">${g.card_count}</td>
+      <td>${g.status === "provisional"
+        ? `<span class="actions"><button onclick="act(this, '/admin/giraffes/${g.id}/confirm')">Confirm</button><span class="result"></span></span>`
+        : ""}</td>
+    </tr>`;
+  }).join("");
+
+  const sightingRow = (s) => `
+    <tr data-status="${s.status}" data-finder="${esc(s.finder)}">
+      <td>${when(s.created_at)}<div class="sub2">captured ${when(s.captured_at)}</div></td>
+      <td>${esc(s.finder)}</td>
+      <td>${badge(SIGHTING_BADGE, s.status)}</td>
+      <td>${esc(s.giraffe_name || "—")}${s.proposed_name ? `<div class="sub2">wish: “${esc(s.proposed_name)}”</div>` : ""}</td>
+      <td class="num">${s.match_confidence ?? "—"}</td>
+      <td>${s.gate_reasons?.length ? esc(s.gate_reasons.join(", ")) : "—"}${s.job_error ? `<div class="sub2">job: ${esc(s.job_error)}</div>` : ""}</td>
+      <td>${esc(s.coarse_region || "—")}</td>
+      <td><button onclick="showPhoto('${s.id}', this)">photo</button></td>
+    </tr>`;
+
+  const mergeRows = d.merges.map((m) => `
+    <tr><td>${when(m.merged_at)}</td><td><b>${esc(m.from_name)}</b> → <b>${esc(m.into_name)}</b></td>
+        <td>${esc(m.merged_by)}</td><td>${esc(m.reason || "—")}</td></tr>`).join("");
+
+  const finderRows = d.finders.map((f) => `
+    <tr><td>${esc(f.handle)}</td><td>${esc(f.role)}</td>
+        <td>${when(f.joined_at)}</td><td class="num">${f.sighting_count}</td></tr>`).join("");
+
+  const liveOpts = live.map((g) => `<option value="${g.id}">${esc(g.name)} (${g.status})</option>`).join("");
+
+  app.innerHTML = `
+    ${tiles}
+
+    <section>
+      <h2>Review queue</h2>
+      <p class="hint">Fuzzy matches waiting for a yes/no, and brand-new giraffes your friends want to name.
+         Approving a fuzzy match activates its descriptors; confirming a giraffe makes the naming permanent.</p>
+      ${queue.length ? `<div class="queue">${queueCards}</div>`
+                     : `<div class="notice">Nothing waiting — the queue is clear. 🎉</div>`}
+    </section>
+
+    <section>
+      <h2>Namings — the giraffe catalogue</h2>
+      <p class="hint">Every identity in the book, who claimed it, and how much evidence sits behind it.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Name</th><th>Status</th><th>Named by</th><th>Park</th><th>First seen</th>
+          <th class="num">Sightings</th><th class="num">Cards</th><th></th></tr></thead>
+        <tbody>${giraffeRows}</tbody>
+      </table></div>
+    </section>
+
+    <section>
+      <h2>Merge two identities</h2>
+      <p class="hint">If two catalogue entries are the same animal, fold one into the other.
+         Non-destructive: sightings re-point, kids' cards are never touched.</p>
+      <div class="mergebox">
+        <select id="merge-from"><option value="">duplicate (goes away)…</option>${liveOpts}</select>
+        <span>into</span>
+        <select id="merge-into"><option value="">canonical (stays)…</option>${liveOpts}</select>
+        <input id="merge-reason" placeholder="reason (optional)" />
+        <span class="actions"><button class="primary" onclick="doMerge(this)">Merge</button><span class="result"></span></span>
+      </div>
+    </section>
+
+    <section>
+      <h2>All sightings <span style="font-weight:400;color:var(--muted)">(${sightings.length})</span></h2>
+      <div class="filters">
+        <select id="f-status" onchange="applyFilters()"><option value="">any status</option>
+          ${Object.keys(SIGHTING_BADGE).map((k) => `<option>${k}</option>`).join("")}</select>
+        <select id="f-finder" onchange="applyFilters()"><option value="">any finder</option>
+          ${finders.map((f) => `<option>${esc(f.handle)}</option>`).join("")}</select>
+      </div>
+      <div class="tablewrap"><table id="sightings-table">
+        <thead><tr><th>Submitted</th><th>Finder</th><th>Status</th><th>Giraffe</th>
+          <th class="num">Conf.</th><th>Gate / errors</th><th>Region</th><th></th></tr></thead>
+        <tbody>${sightings.map(sightingRow).join("")}</tbody>
+      </table></div>
+    </section>
+
+    <section>
+      <h2>Merge history</h2>
+      ${d.merges.length ? `<div class="tablewrap"><table>
+        <thead><tr><th>When</th><th>Merge</th><th>By</th><th>Reason</th></tr></thead>
+        <tbody>${mergeRows}</tbody></table></div>`
+        : `<p class="hint">No merges yet.</p>`}
+    </section>
+
+    <section>
+      <h2>Testers</h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Handle</th><th>Role</th><th>Joined</th><th class="num">Sightings</th></tr></thead>
+        <tbody>${finderRows}</tbody>
+      </table></div>
+    </section>`;
+  app.hidden = false;
+
+  app.querySelectorAll(".queue img.photo").forEach(loadPhoto);
+}
+
+function applyFilters() {
+  const st = $("#f-status").value, fi = $("#f-finder").value;
+  $("#sightings-table tbody").querySelectorAll("tr").forEach((tr) => {
+    tr.style.display =
+      (!st || tr.dataset.status === st) && (!fi || tr.dataset.finder === fi) ? "" : "none";
+  });
+}
+
+async function showPhoto(id, btn) {
+  btn.disabled = true;
+  if (!state.photoUrls.has(id)) {
+    try {
+      const resp = await apiFetch(`/admin/sightings/${id}/photo`);
+      if (!resp.ok) { btn.textContent = "no photo"; return; }
+      state.photoUrls.set(id, URL.createObjectURL(await resp.blob()));
+    } catch { btn.textContent = "error"; return; }
+    finally { btn.disabled = false; }
+  } else btn.disabled = false;
+  $("#lightbox img").src = state.photoUrls.get(id);
+  $("#lightbox").classList.add("open");
+}
+
+function doMerge(btn) {
+  const from = $("#merge-from").value, into = $("#merge-into").value;
+  const out = btn.closest(".actions").querySelector(".result");
+  if (!from || !into) { out.textContent = "pick both giraffes"; return; }
+  if (from === into)  { out.textContent = "can't merge a giraffe into itself"; return; }
+  const name = (id) => state.data.giraffes.find((g) => g.id === id)?.name;
+  if (!confirm(`Merge “${name(from)}” into “${name(into)}”? Sightings and descriptors re-point; this is recorded permanently.`)) return;
+  act(btn, "/admin/merges", { from_giraffe: from, into_giraffe: into, reason: $("#merge-reason").value || null });
+}
+
+boot();
+</script>
+</body>
+</html>
