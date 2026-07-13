@@ -212,7 +212,14 @@ async function boot() {
     else {
       say("");
       $("#signin-wrap").hidden = false;
-      Clerk.mountSignIn($("#signin"));
+      // Explicit return target: Clerk's default post-sign-in redirect is "/",
+      // which on a file:// open is the filesystem index, not this page.
+      Clerk.mountSignIn($("#signin"), {
+        forceRedirectUrl: location.href,
+        fallbackRedirectUrl: location.href,
+        signUpForceRedirectUrl: location.href,
+        signUpFallbackRedirectUrl: location.href,
+      });
     }
   };
   document.head.appendChild(s);
