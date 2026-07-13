@@ -257,8 +257,9 @@ async function refresh(first) {
     return;
   }
   if (resp.status === 403) {
-    say("You're signed in, but this account isn't a <b>reviewer</b>. Grant it once from psql:<br>" +
-        "<code>update users set role = 'reviewer' where handle like '&lt;your-handle&gt;%';</code>", true);
+    say("You're signed in, but this account isn't a <b>reviewer</b>. Grant it once in the Neon SQL editor:<br>" +
+        `<code>update users set role = 'reviewer' where clerk_sub = '${esc(Clerk.user.id)}';</code><br>` +
+        "then refresh this page.", true);
     return;
   }
   if (resp.status === 404) {
