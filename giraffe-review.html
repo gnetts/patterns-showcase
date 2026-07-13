@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>GIRAFFE · sightings review</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦒</text></svg>" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
     --page:        #f9f9f7;
@@ -117,6 +119,11 @@
   tr.merged-row td { color: var(--muted); }
 
   .filters { display: flex; gap: 8px; margin: 0 0 10px; flex-wrap: wrap; }
+
+  /* map */
+  #map { height: 460px; border-radius: 10px; border: 1px solid var(--hairline); background: var(--page); }
+  .leaflet-popup-content { font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .leaflet-popup-content b { font-size: 14px; }
 
   /* merge tool */
   .mergebox { background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px;
@@ -449,6 +456,18 @@ function render() {
     </section>
 
     <section>
+      <h2>Map — where they were spotted</h2>
+      <p class="hint">Solid pins are exact GPS from the photo; dashed circles mark the ~11 km
+         grid cell for sightings without GPS. Pick a giraffe to see just its spots,
+         joined oldest→newest.</p>
+      <div class="filters">
+        <select id="map-giraffe" onchange="drawMap()"><option value="">all giraffes</option>
+          ${live.map((g) => `<option value="${g.id}">${esc(g.name)}</option>`).join("")}</select>
+      </div>
+      <div id="map"></div>
+    </section>
+
+    <section>
       <h2>Merge two identities</h2>
       <p class="hint">If two catalogue entries are the same animal, fold one into the other.
          Non-destructive: sightings re-point, kids' cards are never touched.</p>
@@ -494,6 +513,54 @@ function render() {
   app.hidden = false;
 
   app.querySelectorAll(".queue img.photo").forEach(loadPhoto);
+  drawMap();
+}
+
+/* ---------- map ---------- */
+function coarseCenter(region) {
+  const m = /^grid:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/.exec(region || "");
+  return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
+}
+
+function drawMap() {
+  const el = document.getElementById("map");
+  if (!el) return;
+  if (!window.L) { el.textContent = "Map library didn't load — check your connection and refresh."; return; }
+  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2a78d6";
+  const filter = $("#map-giraffe")?.value || "";
+  if (state.map) { try { state.map.remove(); } catch {} state.map = null; }
+  const map = L.map(el);
+  state.map = map;
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    { maxZoom: 17, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+
+  const located = state.data.sightings
+    .filter((s) => !filter || s.giraffe_id === filter)
+    .filter((s) => (s.lat != null && s.lng != null) || coarseCenter(s.coarse_region))
+    .sort((a, b) => a.captured_at.localeCompare(b.captured_at));
+
+  const pts = [], track = [];
+  for (const s of located) {
+    const precise = s.lat != null && s.lng != null;
+    const ll = precise ? [s.lat, s.lng] : coarseCenter(s.coarse_region);
+    const popup =
+      `<b>${esc(s.giraffe_name || "no identity")}</b><br>` +
+      `${esc((SIGHTING_BADGE[s.status] || [null, s.status])[1])}<br>` +
+      `found by ${esc(s.finder)}<br>captured ${when(s.captured_at)}<br>` +
+      (precise ? `${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}` : "~11 km grid cell (photo had no GPS)");
+    const mark = precise
+      ? L.circleMarker(ll, { radius: 8, weight: 2, color: "#ffffff",
+                             fillColor: accent, fillOpacity: 0.9 })
+      : L.circle(ll, { radius: 5500, weight: 1.5, dashArray: "4 4",
+                       color: accent, fillColor: accent, fillOpacity: 0.12 });
+    mark.addTo(map).bindPopup(popup);
+    pts.push(ll);
+    if (filter && precise) track.push(ll);
+  }
+  if (filter && track.length > 1)
+    L.polyline(track, { color: accent, weight: 2, dashArray: "6 6", opacity: 0.7 }).addTo(map);
+  if (pts.length) map.fitBounds(pts, { padding: [30, 30], maxZoom: 13 });
+  else map.setView([-24.5, 31.5], 8); // Kruger, until something has a location
 }
 
 function applyFilters() {
